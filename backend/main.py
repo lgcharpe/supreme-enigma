@@ -54,12 +54,6 @@ async def get(date_range: RequestBody):
             continue
         else:
             summary = generate_response(project_text)
-            # Parse the summary to a json object.
-            try:
-                summary = json.loads(summary)
-            except:
-                logging.warning(f"Failed to parse summary for publication {pid}")
-                continue
             response_object["lengths"].append(length)
             response_object["response"].append(summary)
             response_object["ids"].append(pid)
