@@ -1,9 +1,12 @@
-/** @type {import('tailwindcss').Config} */
+import type { Config } from "tailwindcss";
+import { fontFamily } from "tailwindcss/defaultTheme";
+
 module.exports = {
   darkMode: ["class"],
   content: ["./app/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
+      fontFamily: { sans: ["Inter", ...fontFamily.sans] },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
@@ -54,4 +57,4 @@ module.exports = {
     },
   },
   plugins: [require("tailwindcss-animate")],
-};
+} satisfies Config;
