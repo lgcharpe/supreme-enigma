@@ -3,15 +3,11 @@ import logging
 import json
 from typing import Optional, Tuple, List
 from datetime import date
-from xml.parsers.expat import ExpatError
-from requests.exceptions import RequestException
 from config import settings
-from models import RequestBody, DayBody
+from models import DayBody, PeriodBody
 from services.xml_service import XMLService
 from services.cache_service import CacheService
 from services.olama_service import OlamaService
-from models import RequestBody
-from services.xml_service import XMLService
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +49,7 @@ class APIService:
             return None
 
     @staticmethod
-    def get_season_ids(date_range: RequestBody) -> Optional[Tuple[List[str], List[date]]]:
+    def get_season_ids(date_range: PeriodBody) -> Optional[Tuple[List[str], List[date]]]:
         try:
             response = requests.get(
                 settings.SEASON_LIST_URL,
