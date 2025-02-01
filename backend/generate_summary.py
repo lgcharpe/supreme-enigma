@@ -13,10 +13,9 @@ def generate_response(text_to_summarize: str) -> str:
     headers = {"Content-Type": "application/json"}
 
     raw = requests.post(url, json=payload, headers=headers).json()
-    print(raw)
 
-    print(raw["response"])
+    return raw["response"]
 
 
 if __name__ == "__main__":
-    generate_response("This is a text about everything possible!")
+    print(generate_response("This is a text about everything possible!"))
