@@ -54,8 +54,10 @@ async def get(date_range: RequestBody):
             continue
         else:
             summary = generate_response(project_text)
+            #parse summary to json
+            parsed_summary = json.loads(summary)
             response_object["lengths"].append(length)
-            response_object["response"].append(summary)
+            response_object["response"].append(parsed_summary)
             response_object["ids"].append(pid)
 
     logging.warning(f"Skipped {skipped} summaries due to excessive length")
