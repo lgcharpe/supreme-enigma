@@ -106,7 +106,7 @@ class APIService:
                 continue
 
             try:
-                summary = OlamaService.generate_response(publication).strip("```")
+                summary = OlamaService.generate_response(publication).strip("```json").strip("```")
                 try:
                     parsed_summary = json.loads(summary)
                 except json.JSONDecodeError:
