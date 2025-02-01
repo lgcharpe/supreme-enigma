@@ -12,7 +12,7 @@ import xml.etree.ElementTree as ET
 
 from pydantic import BaseModel
 from datetime import date, datetime
-from generate_summary import generate_response
+from generate_summary import generate_response, generate_meta_response
 
 SEASON_LIST_URL = "https://data.stortinget.no/eksport/publikasjoner?publikasjontype=referat&sesjonid=2024-2025"
 PUBLICATION_URL = "https://data.stortinget.no/eksport/publikasjon?publikasjonid="
@@ -22,12 +22,12 @@ app = FastAPI()
 class RequestBody(BaseModel):
     from_date: date
     to_date: date
+    meta_summary: bool
 
-
-@app.get("/")
-async def get(date_range: RequestBody):
+@app.post("/")
+async def get(body: RequestBody):
     # Get season_ids in a list
-    season_ids, dates = get_season_ids(date_range)
+    season_ids, dates = get_season_ids(body)
     assert len(season_ids) == len(dates), "Wopsi Dopsi, uneven length"
     project_texts = []
     parsed_ids = []
@@ -44,13 +44,16 @@ async def get(date_range: RequestBody):
 
     # Generate summary for each publication
     skipped = 0
-    responses = []
+    final_response = {
+        "responses": [],
+        "meta_summary": None
+    }
     for project_text, pid, p_date in zip(project_texts, parsed_ids, parsed_dates):
         # Tries to read from cache, if it is None it generates a new response
         response_object = read_from_cache(pid)
         if response_object:
             logging.info(f"Found cached object for {pid}")
-            responses.append(response_object)
+            final_response["responses"].append(response_object)
             continue
 
         length = len(project_text.split(" "))
@@ -66,11 +69,12 @@ async def get(date_range: RequestBody):
                 parsed_summary = json.loads(summary)
                 response_object = {
                     "response": parsed_summary,
+                    "raw_response": summary,
                     "lengths": length,
                     "ids": pid,
                     "dates": str(p_date)
                 }
-                responses.append(response_object)
+                final_response["responses"].append(response_object)
                 try:
                     cache_object(response_object)
                 except Exception as e:
@@ -80,9 +84,21 @@ async def get(date_range: RequestBody):
                 logging.error(f"Failed to parse JSON: {str(e)}")
                 continue
 
-
     logging.warning(f"Skipped {skipped} summaries due to excessive length")
-    return responses
+
+    if body.meta_summary:
+        logging.info("Generating meta summary")
+        raw_responses = [response["raw_response"] for response in final_response["responses"]]
+        meta_summary = generate_meta_response("\n".join(raw_responses))
+        try:
+            meta_summary = meta_summary.strip("```")
+            parsed_m_summary = json.loads(meta_summary)
+            final_response["meta_summary"] = parsed_m_summary
+        except json.JSONDecodeError as e:
+            logging.error(f"Failed to parse JSON: {str(e)}")
+            final_response["meta_summary"] = None
+
+    return final_response
 
 # A funciton that saves the response object as a local json file in a folder. It also checks if the folder exists, if not it creates it.
 def cache_object(response_object: dict):
