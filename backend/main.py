@@ -69,9 +69,6 @@ async def get(date_range: RequestBody):
                     "ids": pid,
                     "dates": str(p_date)
                 }
-                response_object["lengths"].append(length)
-                response_object["response"].append(parsed_summary)
-                response_object["ids"].append(pid)
                 try:
                     cache_object(response_object)
                 except Exception as e:
