@@ -39,6 +39,7 @@ async def get(date_range: DateRange):
     for project_text in project_texts:
         summary = generate_response(project_text)
         summaries.append(summary)
+    return summaries
 
 
 
