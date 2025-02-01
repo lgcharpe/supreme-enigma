@@ -8,6 +8,7 @@ from pydantic import BaseModel
 import logging
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 class Topic(TypedDict):

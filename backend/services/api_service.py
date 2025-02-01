@@ -10,6 +10,8 @@ from services.cache_service import CacheService
 from services.olama_service import OlamaService
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
 MAX_TOKEN_LIMIT = 15000
 
 class APIService:
@@ -105,7 +107,12 @@ class APIService:
 
             try:
                 summary = OlamaService.generate_response(publication).strip("```")
-                parsed_summary = json.loads(summary)
+                try:
+                    parsed_summary = json.loads(summary)
+                except json.JSONDecodeError:
+                    logger.error(f"Error parsing JSON: {summary}")
+                    continue
+
                 response_object = {
                     "response": parsed_summary,
                     "raw_response": summary,

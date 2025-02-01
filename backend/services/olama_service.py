@@ -1,9 +1,6 @@
 import logging
 import requests
 
-
-logger = logging.getLogger(__name__)
-
 class OlamaService:
     @staticmethod
     def generate_response(text_to_summarize: str) -> str:
