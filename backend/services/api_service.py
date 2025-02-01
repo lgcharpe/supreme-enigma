@@ -10,6 +10,8 @@ from models import RequestBody, DayBody
 from services.xml_service import XMLService
 from services.cache_service import CacheService
 from services.olama_service import OlamaService
+from models import RequestBody
+from services.xml_service import XMLService
 
 logger = logging.getLogger(__name__)
 
