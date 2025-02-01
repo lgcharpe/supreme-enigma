@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 import xmltodict
+import json
 import requests
 from typing import List, Optional
 import logging
@@ -10,18 +11,19 @@ import xml.etree.ElementTree as ET
 
 from pydantic import BaseModel
 from datetime import date, datetime
-from generate_summary import generate_response
+from generate_summary import generate_response, generate_meta_response
 
 SEASON_LIST_URL = "https://data.stortinget.no/eksport/publikasjoner?publikasjontype=referat&sesjonid=2024-2025"
 PUBLICATION_URL = "https://data.stortinget.no/eksport/publikasjon?publikasjonid="
 app = FastAPI()
 
-class DateRange(BaseModel):
+class RequestBody(BaseModel):
     from_date: date
     to_date: date
 
+
 @app.get("/")
-async def get(date_range: DateRange):
+async def get(date_range: RequestBody):
     # Get season_ids in a list
     season_ids = get_season_ids(date_range)
     project_texts = []
@@ -37,25 +39,33 @@ async def get(date_range: DateRange):
 
     # Generate summary for each publication
     response_object = {
-        "summaries": [],
+        "response": [],
         "lengths": [],
-        "ids": []
+        "ids": [],
+        "meta_summary": ""
 
     }
     skipped = 0
     for project_text, pid in zip(project_texts, parsed_ids):
         length = len(project_text.split(" "))
         print(f"Length: {length}")
-        if length > 2000:
+        if length > 5000:
             skipped += 1
             continue
         else:
             summary = generate_response(project_text)
+            # Parse the summary to a json object.
+            try:
+                summary = json.loads(summary)
+            except:
+                logging.warning(f"Failed to parse summary for publication {pid}")
+                continue
             response_object["lengths"].append(length)
-            response_object["summaries"].append(summary)
+            response_object["response"].append(summary)
             response_object["ids"].append(pid)
 
     logging.warning(f"Skipped {skipped} summaries due to excessive length")
+
     return response_object
 
 
@@ -110,7 +120,7 @@ def get_publication(publication_id: str) -> Optional[dict]:
         logger.error(f"Unexpected error occurred: {str(e)}")
         return None
 
-def get_season_ids(date_range: DateRange) -> Optional[List[str]]:
+def get_season_ids(date_range: RequestBody) -> Optional[List[str]]:
     """
     Safely fetches and extracts publication IDs from an XML endpoint.
 
