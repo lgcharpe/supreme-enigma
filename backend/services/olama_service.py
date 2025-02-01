@@ -1,6 +1,5 @@
 import logging
 import requests
-from requests.exceptions import RequestException
 
 
 logger = logging.getLogger(__name__)

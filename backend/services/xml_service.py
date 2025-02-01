@@ -1,10 +1,9 @@
 import xml.etree.ElementTree as ET
 import re
 import xmltodict
-import logging
-from typing import Optional, List, Dict, TypedDict, Tuple
+from typing import Optional, List, TypedDict, Tuple
 from datetime import datetime, date
-from models import RequestBody, DayBody
+from models import DayBody
 from pydantic import BaseModel
 import logging
 

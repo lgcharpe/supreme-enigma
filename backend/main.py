@@ -4,7 +4,6 @@ from models import PeriodBody, DayBody
 from services.api_service import APIService
 from services.cache_service import CacheService
 from services.olama_service import OlamaService
-from typing import List
 import json
 
 app = FastAPI()
