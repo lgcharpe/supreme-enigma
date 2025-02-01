@@ -46,9 +46,3 @@ async def topics():
     # Implementation for the topics endpoint
     topics = APIService.get_topics()
     return topics
-=======
-@app.post("/day")
-async def day(body: DayBody):
-    # Implementation for the day endpoint
-    pass
->>>>>>> 53ea9a84572ed821a2acc516dc882b7d31d8d2dd
