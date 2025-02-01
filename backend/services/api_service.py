@@ -1,12 +1,15 @@
 import requests
 import logging
+import json
 from typing import Optional, Tuple, List
 from datetime import date
 from xml.parsers.expat import ExpatError
 from requests.exceptions import RequestException
 from config import settings
-from models import RequestBody
+from models import RequestBody, DayBody
 from services.xml_service import XMLService
+from services.cache_service import CacheService
+from services.olama_service import OlamaService
 
 logger = logging.getLogger(__name__)
 
@@ -45,3 +48,56 @@ class APIService:
         except Exception as e:
             logger.error(f"Error fetching season IDs: {str(e)}")
             return None
+
+    @staticmethod
+    def get_ids_from_date(specific_date: DayBody) -> Optional[List[str]]:
+        try:
+            response = requests.get(
+                settings.SEASON_LIST_URL,
+                timeout=settings.REQUEST_TIMEOUT,
+                verify=True,
+                headers={'User-Agent': settings.USER_AGENT}
+            )
+            response.raise_for_status()
+            return XMLService.parse_season_list(response.text, specific_date)
+
+        except Exception as e:
+            logger.error(f"Error fetching season IDs: {str(e)}")
+            return None
+
+    @staticmethod
+    def get_responses_from_ids(season_ids: List, dates: List) -> dict:
+        final_response = {
+            "responses": [],
+        }
+        for season_id, p_date in zip(season_ids, dates):
+            cached_response = CacheService.read_from_cache(season_id)
+            if cached_response:
+                final_response["responses"].append(cached_response)
+                continue
+
+            # Get and process publication
+            publication = APIService.get_publication(season_id)
+            if not publication:
+                continue
+
+            length = len(publication.split())
+            if length > 5000:
+                continue
+
+            try:
+                summary = OlamaService.generate_response(publication).strip("```")
+                parsed_summary = json.loads(summary)
+                response_object = {
+                    "response": parsed_summary,
+                    "raw_response": summary,
+                    "lengths": length,
+                    "ids": season_id,
+                    "dates": str(p_date)
+                }
+                final_response["responses"].append(response_object)
+                CacheService.cache_object(response_object)
+            except Exception as e:
+                logger.error(f"Error processing publication {season_id}: {str(e)}")
+                continue
+        return final_response

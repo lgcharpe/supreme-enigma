@@ -4,7 +4,9 @@ import xmltodict
 import logging
 from typing import Optional, Tuple, List
 from datetime import datetime, date
-from models import RequestBody
+from models import RequestBody, DayBody
+from pydantic import BaseModel
+from telnetlib import BM
 
 class XMLService:
     @staticmethod
@@ -33,7 +35,7 @@ class XMLService:
         return re.sub(r"\[\d{2}:\d{2}:\d{2}\]", "", text)
 
     @staticmethod
-    def parse_season_list(xml_data: str, date_range: RequestBody) -> Tuple[List[str], List[date]]:
+    def parse_season_list(xml_data: str, date_object: BaseModel) -> Tuple[List[str], List[date]]:
         data = xmltodict.parse(xml_data)
         publication_ids = []
         dates = []
@@ -48,10 +50,21 @@ class XMLService:
             date_str = pub.get('dato')
             if date_str:
                 pub_date = datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S").date()
-                if date_range.from_date <= pub_date <= date_range.to_date:
-                    pub_id = pub.get('id')
-                    if pub_id:
-                        publication_ids.append(pub_id)
-                        dates.append(pub_date)
+                # If date object is of instance DayBody, we want to extract the publication IDs for a specific date
+                # If date object is of instance RequestBody, we want to extract the publication IDs for a date range
+                if isinstance(date_object, DayBody):
+                    if date_object.date == pub_date:
+                        pub_id = pub.get('id')
+                        if pub_id:
+                            publication_ids.append(pub_id)
+                            dates.append(pub_date)
+                elif isinstance(date_object, RequestBody):
+                    if date_object.from_date <= pub_date <= date_object.to_date:
+                        pub_id = pub.get('id')
+                        if pub_id:
+                            publication_ids.append(pub_id)
+                            dates.append(pub_date)
+                else:
+                    raise ValueError("Date object must be an instance of DayBody or Request")
 
         return publication_ids, dates
