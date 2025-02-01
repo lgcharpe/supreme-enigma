@@ -10,6 +10,7 @@ from services.cache_service import CacheService
 from services.olama_service import OlamaService
 
 logger = logging.getLogger(__name__)
+MAX_TOKEN_LIMIT = 15000
 
 class APIService:
     @staticmethod
@@ -99,7 +100,7 @@ class APIService:
                 continue
 
             length = len(publication.split())
-            if length > 5000:
+            if length > MAX_TOKEN_LIMIT:
                 continue
 
             try:
