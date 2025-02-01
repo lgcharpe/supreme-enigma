@@ -25,27 +25,38 @@ async def get(date_range: DateRange):
     # Get season_ids in a list
     season_ids = get_season_ids(date_range)
     project_texts = []
+    parsed_ids = []
     if season_ids:
-        for season_id in season_ids[:10]:
+        for season_id in season_ids:
             # Get publication data for each season_id
             publication = get_publication(season_id)
             project_texts.append(publication)
+            parsed_ids.append(season_id)
     else:
-        print("No season_ids found")
+        logging.warning("No season_ids found")
 
     # Generate summary for each publication
-    summaries = []
-    lengths = []
-    for project_text in project_texts:
-        length = len(project_text.split(" "))
-        lengths.append(length)
-        print(f"Length: {length}")
-        if length > 10000:
-            continue
-        summary = generate_response(project_text)
-        summaries.append(summary)
+    response_object = {
+        "summaries": [],
+        "lengths": [],
+        "ids": []
 
-    return {"summaries": summaries}
+    }
+    skipped = 0
+    for project_text, pid in zip(project_texts, parsed_ids):
+        length = len(project_text.split(" "))
+        print(f"Length: {length}")
+        if length > 2000:
+            skipped += 1
+            continue
+        else:
+            summary = generate_response(project_text)
+            response_object["lengths"].append(length)
+            response_object["summaries"].append(summary)
+            response_object["ids"].append(pid)
+
+    logging.warning(f"Skipped {skipped} summaries due to excessive length")
+    return response_object
 
 
 def get_publication(publication_id: str) -> Optional[dict]:
