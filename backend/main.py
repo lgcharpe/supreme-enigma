@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 import logging
-from models import RequestBody, DayBody
+from models import PeriodBody, DayBody
 from services.api_service import APIService
 from services.cache_service import CacheService
 from services.olama_service import OlamaService
@@ -10,15 +10,19 @@ import json
 app = FastAPI()
 logger = logging.getLogger(__name__)
 
-@app.post("/")
-async def get(body: RequestBody):
-    season_ids, dates = APIService.get_season_ids(body)
-    if not season_ids:
-        return {"responses": [], "meta_summary": None}
+@app.post("/period")
+async def get(body: PeriodBody):
+    # Check if the response is cached first
+    cached_response = CacheService.read_period_object_from_cache(body)
+    if cached_response:
+        return cached_response
+    else:
+        season_ids, dates = APIService.get_season_ids(body)
+        if not season_ids:
+            return {"responses": [], "meta_summary": None}
 
-    final_response = APIService.get_responses_from_ids(season_ids, dates)
+        final_response = APIService.get_responses_from_ids(season_ids, dates)
 
-    if body.meta_summary:
         try:
             raw_responses = [response["raw_response"] for response in final_response["responses"]]
             meta_summary = OlamaService.generate_meta_response("\n".join(raw_responses)).strip("```json").strip("```")
@@ -27,7 +31,9 @@ async def get(body: RequestBody):
             logger.error(f"Error generating meta summary: {str(e)}")
             final_response["meta_summary"] = None
 
-    return final_response
+        CacheService.cache_period_object(final_response, body)
+
+        return final_response
 
 
 @app.post("/day")
