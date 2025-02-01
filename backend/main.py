@@ -12,7 +12,7 @@ import xml.etree.ElementTree as ET
 
 from pydantic import BaseModel
 from datetime import date, datetime
-from generate_summary import generate_response, generate_meta_response
+from generate_summary import generate_response
 
 SEASON_LIST_URL = "https://data.stortinget.no/eksport/publikasjoner?publikasjontype=referat&sesjonid=2024-2025"
 PUBLICATION_URL = "https://data.stortinget.no/eksport/publikasjon?publikasjonid="
