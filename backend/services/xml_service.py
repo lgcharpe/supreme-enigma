@@ -3,7 +3,7 @@ import re
 import xmltodict
 from typing import Optional, List, TypedDict, Tuple
 from datetime import datetime, date
-from models import DayBody
+from models import PeriodBody, DayBody
 from pydantic import BaseModel
 import logging
 
@@ -144,7 +144,7 @@ class XMLService:
                         if pub_id:
                             publication_ids.append(pub_id)
                             dates.append(pub_date)
-                elif isinstance(date_object, RequestBody):
+                elif isinstance(date_object, PeriodBody):
                     if date_object.from_date <= pub_date <= date_object.to_date:
                         pub_id = pub.get('id')
                         if pub_id:
