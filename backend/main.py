@@ -7,8 +7,10 @@ from requests.exceptions import RequestException
 from xml.parsers.expat import ExpatError
 import re
 
+
 from pydantic import BaseModel
 from datetime import date, datetime
+from generate_summary import generate_response
 
 SEASON_LIST_URL = "https://data.stortinget.no/eksport/publikasjoner?publikasjontype=referat&sesjonid=2024-2025"
 PUBLICATION_URL = "https://data.stortinget.no/eksport/publikasjon?publikasjonid="
@@ -31,6 +33,13 @@ async def get(date_range: DateRange):
     else:
         print("No season_ids found")
     print(project_texts)
+
+    # Generate summary for each publication
+    summaries = []
+    for project_text in project_texts:
+        summary = generate_response(project_text)
+        summaries.append(summary)
+
 
 
 def get_publication(publication_id: str) -> Optional[dict]:

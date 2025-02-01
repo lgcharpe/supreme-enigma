@@ -1,6 +1,5 @@
 import requests
 
-
 def generate_response(text_to_summarize: str) -> str:
     prompt: str = f"Kan du oppsummere: \n{text_to_summarize}"
 
