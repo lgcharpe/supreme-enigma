@@ -49,6 +49,7 @@ async def get(date_range: RequestBody):
         # Tries to read from cache, if it is None it generates a new response
         response_object = read_from_cache(pid)
         if response_object:
+            logging.info(f"Found cached object for {pid}")
             responses.append(response_object)
             continue
 
@@ -69,6 +70,7 @@ async def get(date_range: RequestBody):
                     "ids": pid,
                     "dates": str(p_date)
                 }
+                responses.append(response_object)
                 try:
                     cache_object(response_object)
                 except Exception as e:
