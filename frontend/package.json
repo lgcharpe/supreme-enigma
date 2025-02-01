@@ -11,12 +11,17 @@
   "dependencies": {
     "@react-router/node": "^7.1.5",
     "@react-router/serve": "^7.1.5",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "eslint": "^9.19.0",
     "isbot": "^5.1.17",
+    "lucide-react": "^0.474.0",
     "prettier": "^3.4.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-router": "^7.1.5"
+    "react-router": "^7.1.5",
+    "tailwind-merge": "^3.0.1",
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@react-router/dev": "^7.1.5",
