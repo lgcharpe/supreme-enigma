@@ -92,6 +92,7 @@ async def get(body: RequestBody):
         meta_summary = generate_meta_response("\n".join(raw_responses))
         try:
             meta_summary = meta_summary.strip("```")
+            print(meta_summary)
             parsed_m_summary = json.loads(meta_summary)
             final_response["meta_summary"] = parsed_m_summary
         except json.JSONDecodeError as e:
