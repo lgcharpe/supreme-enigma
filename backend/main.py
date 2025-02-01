@@ -8,6 +8,8 @@ import json
 
 app = FastAPI()
 logger = logging.getLogger(__name__)
+# Set the logger level to display info
+logger.setLevel(logging.INFO)
 
 @app.post("/period")
 async def get(body: PeriodBody):

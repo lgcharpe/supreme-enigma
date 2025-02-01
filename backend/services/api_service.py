@@ -86,6 +86,8 @@ class APIService:
             "responses": [],
         }
         for season_id, p_date in zip(season_ids, dates):
+            # Log the season ID and date
+            logger.info(f"Processing season ID {season_id} from date {p_date}")
             cached_response = CacheService.read_from_cache(season_id)
             if cached_response:
                 final_response["responses"].append(cached_response)
