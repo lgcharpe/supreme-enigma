@@ -91,7 +91,7 @@ async def get(body: RequestBody):
         raw_responses = [response["raw_response"] for response in final_response["responses"]]
         meta_summary = generate_meta_response("\n".join(raw_responses))
         try:
-            meta_summary = meta_summary.strip("```")
+            meta_summary = meta_summary.strip("```json").strip("```")
             print(meta_summary)
             parsed_m_summary = json.loads(meta_summary)
             final_response["meta_summary"] = parsed_m_summary
