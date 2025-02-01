@@ -15,6 +15,23 @@ logger = logging.getLogger(__name__)
 
 class APIService:
     @staticmethod
+    def get_topics() -> Optional[List[str]]:
+        try:
+            response = requests.get(
+                settings.TOPICS_URL,
+                timeout=settings.REQUEST_TIMEOUT,
+                verify=True,
+                headers={'User-Agent': settings.USER_AGENT}
+            )
+            response.raise_for_status()
+            return XMLService.parse_topics(response.text)
+
+        except Exception as e:
+            logger.error(f"Error fetching topics: {str(e)}")
+            return None
+
+
+    @staticmethod
     def get_publication(publication_id: str) -> Optional[str]:
         if not publication_id or not isinstance(publication_id, str):
             raise ValueError("Publication ID must be a non-empty string")

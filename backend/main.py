@@ -39,3 +39,10 @@ async def day(body: DayBody):
 
     response_object = APIService.get_responses_from_ids(season_ids, dates)
     return response_object
+
+
+@app.get("/topics")
+async def topics():
+    # Implementation for the topics endpoint
+    topics = APIService.get_topics()
+    return topics
