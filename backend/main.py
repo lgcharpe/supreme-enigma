@@ -6,7 +6,7 @@ import logging
 from requests.exceptions import RequestException
 from xml.parsers.expat import ExpatError
 import re
-
+import xml.etree.ElementTree as ET
 
 from pydantic import BaseModel
 from datetime import date, datetime
@@ -35,12 +35,17 @@ async def get(date_range: DateRange):
 
     # Generate summary for each publication
     summaries = []
+    lengths = []
     for project_text in project_texts:
+        length = len(project_text.split(" "))
+        if length > 5000:
+            continue
+        lengths.append(length)
         summary = generate_response(project_text)
         summaries.append(summary)
-        print(summary)
-    return summaries
 
+    print(f"Average length: {sum(lengths) / len(lengths)}")
+    return {"summaries": summaries}
 
 
 def get_publication(publication_id: str) -> Optional[dict]:
@@ -170,7 +175,6 @@ def get_season_ids(date_range: DateRange) -> Optional[List[str]]:
             else:
                 logger.warning(f"Publication found without date: {pub}")
 
-
         return publication_ids
 
     except RequestException as e:
@@ -186,9 +190,6 @@ def get_season_ids(date_range: DateRange) -> Optional[List[str]]:
         logger.error(f"Unexpected error occurred: {str(e)}")
         return None
 
-
-
-import xml.etree.ElementTree as ET
 
 def extract_text_from_xml(xml_string):
     root = ET.fromstring(xml_string)
