@@ -38,13 +38,13 @@ async def get(date_range: DateRange):
     lengths = []
     for project_text in project_texts:
         length = len(project_text.split(" "))
-        if length > 5000:
-            continue
         lengths.append(length)
+        print(f"Length: {length}")
+        if length > 10000:
+            continue
         summary = generate_response(project_text)
         summaries.append(summary)
 
-    print(f"Average length: {sum(lengths) / len(lengths)}")
     return {"summaries": summaries}
 
 
