@@ -12,6 +12,7 @@ def generate_response(text_to_summarize: str) -> str:
     headers = {"Content-Type": "application/json"}
 
     raw = requests.post(url, json=payload, headers=headers).json()
+    print(raw)
 
     return raw["response"]
 

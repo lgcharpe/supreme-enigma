@@ -32,13 +32,13 @@ async def get(date_range: DateRange):
             project_texts.append(publication)
     else:
         print("No season_ids found")
-    print(project_texts)
 
     # Generate summary for each publication
     summaries = []
     for project_text in project_texts:
         summary = generate_response(project_text)
         summaries.append(summary)
+        print(summary)
     return summaries
 
 
