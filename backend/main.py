@@ -54,7 +54,10 @@ async def get(date_range: RequestBody):
             continue
         else:
             summary = generate_response(project_text)
-            #parse summary to json
+
+            # Remove triple backticks from the start and end of the string
+            summary = summary.strip("```")
+            print(summary)
             parsed_summary = json.loads(summary)
             response_object["lengths"].append(length)
             response_object["response"].append(parsed_summary)
