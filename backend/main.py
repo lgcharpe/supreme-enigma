@@ -7,14 +7,16 @@ import logging
 from requests.exceptions import RequestException
 from xml.parsers.expat import ExpatError
 import re
+import os
 import xml.etree.ElementTree as ET
 
 from pydantic import BaseModel
 from datetime import date, datetime
-from generate_summary import generate_response
+from generate_summary import generate_response, generate_meta_response
 
 SEASON_LIST_URL = "https://data.stortinget.no/eksport/publikasjoner?publikasjontype=referat&sesjonid=2024-2025"
 PUBLICATION_URL = "https://data.stortinget.no/eksport/publikasjon?publikasjonid="
+CACHE_FOLDER = "../cache"
 app = FastAPI()
 
 class RequestBody(BaseModel):
@@ -25,28 +27,31 @@ class RequestBody(BaseModel):
 @app.get("/")
 async def get(date_range: RequestBody):
     # Get season_ids in a list
-    season_ids = get_season_ids(date_range)
+    season_ids, dates = get_season_ids(date_range)
+    assert len(season_ids) == len(dates), "Wopsi Dopsi, uneven length"
     project_texts = []
     parsed_ids = []
+    parsed_dates = []
     if season_ids:
-        for season_id in season_ids:
+        for season_id, p_date in zip(season_ids, dates):
             # Get publication data for each season_id
             publication = get_publication(season_id)
             project_texts.append(publication)
             parsed_ids.append(season_id)
+            parsed_dates.append(p_date)
     else:
         logging.warning("No season_ids found")
 
     # Generate summary for each publication
-    response_object = {
-        "response": [],
-        "lengths": [],
-        "ids": [],
-        "meta_summary": ""
-
-    }
     skipped = 0
-    for project_text, pid in zip(project_texts, parsed_ids):
+    responses = []
+    for project_text, pid, p_date in zip(project_texts, parsed_ids, parsed_dates):
+        # Tries to read from cache, if it is None it generates a new response
+        response_object = read_from_cache(pid)
+        if response_object:
+            responses.append(response_object)
+            continue
+
         length = len(project_text.split(" "))
         print(f"Length: {length}")
         if length > 5000:
@@ -54,18 +59,46 @@ async def get(date_range: RequestBody):
             continue
         else:
             summary = generate_response(project_text)
+            try:
+                # Remove triple backticks from the start and end of the string
+                summary = summary.strip("```")
+                parsed_summary = json.loads(summary)
+                response_object = {
+                    "response": parsed_summary,
+                    "lengths": length,
+                    "ids": pid,
+                    "dates": str(p_date)
+                }
+                response_object["lengths"].append(length)
+                response_object["response"].append(parsed_summary)
+                response_object["ids"].append(pid)
+                try:
+                    cache_object(response_object)
+                except Exception as e:
+                    logging.error(f"Failed to cache object: {str(e)}")
+                    continue
+            except json.JSONDecodeError as e:
+                logging.error(f"Failed to parse JSON: {str(e)}")
+                continue
 
-            # Remove triple backticks from the start and end of the string
-            summary = summary.strip("```")
-            print(summary)
-            parsed_summary = json.loads(summary)
-            response_object["lengths"].append(length)
-            response_object["response"].append(parsed_summary)
-            response_object["ids"].append(pid)
 
     logging.warning(f"Skipped {skipped} summaries due to excessive length")
+    return responses
 
-    return response_object
+# A funciton that saves the response object as a local json file in a folder. It also checks if the folder exists, if not it creates it.
+def cache_object(response_object: dict):
+    if not os.path.exists(CACHE_FOLDER):
+        os.makedirs(CACHE_FOLDER)
+    with open(f"{CACHE_FOLDER}/{response_object['ids']}.json", "w") as f:
+        json.dump(response_object, f)
+
+# A function that reads the response object from the local json file based on pid and returns None if the file does not exist.
+def read_from_cache(id: str):
+    if os.path.exists(f"{CACHE_FOLDER}/{id}.json"):
+        with open(f"{CACHE_FOLDER}/{id}.json", "r") as f:
+            return json.load(f)
+    else:
+        return None
 
 
 def get_publication(publication_id: str) -> Optional[dict]:
@@ -119,7 +152,7 @@ def get_publication(publication_id: str) -> Optional[dict]:
         logger.error(f"Unexpected error occurred: {str(e)}")
         return None
 
-def get_season_ids(date_range: RequestBody) -> Optional[List[str]]:
+def get_season_ids(date_range: RequestBody):
     """
     Safely fetches and extracts publication IDs from an XML endpoint.
 
@@ -177,6 +210,7 @@ def get_season_ids(date_range: RequestBody) -> Optional[List[str]]:
 
         # Safely extract IDs
         publication_ids = []
+        dates = []
         for pub in publications:
             date_str = pub.get('dato')
             # check if date is within range provdied by the argumentof the function
@@ -188,6 +222,7 @@ def get_season_ids(date_range: RequestBody) -> Optional[List[str]]:
                     pub_id = pub.get('id')
                     if pub_id:
                         publication_ids.append(pub_id)
+                        dates.append(date)
                     else:
                         logger.warning(f"Publication found without ID: {pub}")
                 else:
@@ -195,7 +230,7 @@ def get_season_ids(date_range: RequestBody) -> Optional[List[str]]:
             else:
                 logger.warning(f"Publication found without date: {pub}")
 
-        return publication_ids
+        return publication_ids, dates
 
     except RequestException as e:
         logger.error(f"Network error occurred: {str(e)}")
