@@ -128,14 +128,14 @@ class APIService:
         return final_response
 
     @staticmethod
-    def get_responses_from_ids_and_topic(season_ids: List, dates: List, language: str, topic: str) -> dict:
+    def get_responses_from_ids_and_topic(season_ids: List, dates: List, language: str, topic: str, topic_id: int) -> dict:
         final_response = {
             "responses": [],
         }
         for season_id, p_date in zip(season_ids, dates):
             # Log the season ID and date
             logger.info(f"Processing season ID {season_id} from date {p_date}")
-            cached_response = CacheService.read_from_cache(season_id)
+            cached_response = CacheService.read_from_cache_by_topic(season_id, topic_id)
             if cached_response:
                 final_response["responses"].append(cached_response)
                 continue
@@ -165,7 +165,7 @@ class APIService:
                     "dates": str(p_date)
                 }
                 final_response["responses"].append(response_object)
-                CacheService.cache_object(response_object)
+                CacheService.cache_object_by_topic(response_object, topic_id)
             except Exception as e:
                 logger.error(f"Error processing publication {season_id}: {str(e)}")
                 continue

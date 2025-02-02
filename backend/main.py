@@ -89,13 +89,12 @@ async def get_summary_by_date_and_topic(
     topics = APIService.get_topics()
     all_topics = XMLService.get_all_topic_names(topics)
     topic_name = all_topics.get(topic, None)
-    print(topic_name)
 
     season_ids, dates = APIService.get_ids_from_date(d_obj)
     if not season_ids:
         return {"responses": [], "meta_summary": None}
 
-    response_object = APIService.get_responses_from_ids_and_topic(season_ids, dates, d_obj.lang, topic_name)
+    response_object = APIService.get_responses_from_ids_and_topic(season_ids, dates, d_obj.lang, topic_name, topic)
     return response_object
 
 @app.get("/summary/{country}/period/{startDate}/{endDate}/{topic}")
@@ -116,7 +115,7 @@ async def get_summary_by_period_and_topic(
     d_object = PeriodBody(from_date=startDate, to_date=endDate)
     language_name = get_language_name(lang)
     # Check if the response is cached first
-    cached_response = CacheService.read_period_object_from_cache(d_object)
+    cached_response = CacheService.read_period_object_from_cache_by_topic(d_object, topic)
     if cached_response:
         return cached_response
     else:
@@ -134,7 +133,7 @@ async def get_summary_by_period_and_topic(
             logger.error(f"Error generating meta summary: {str(e)}")
             final_response["meta_summary"] = None
 
-        CacheService.cache_period_object(final_response, d_object)
+        CacheService.cache_period_object_by_topic_by_topic(final_response, d_object, topic)
 
         return final_response
 
@@ -157,7 +156,6 @@ async def get_latest_summary(
     date_range = get_date_range()
     from_date = date_range["from_date"]
     to_date = date_range["to_date"]
-    print(from_date, to_date)
     # call the get summary by period method
     result = await get_summary_by_period(country, from_date, to_date, lang)
     return result
