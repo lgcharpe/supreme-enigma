@@ -44,6 +44,7 @@ class OlamaService:
         ```
 
         Focus on the most significant events and discussions. Make the summary engaging but factual. Include any memorable exchanges or notable moments.
+        You should ONLY reply with the JSON object.
 
         Here is the transcription:
             {text_to_summarize}
@@ -103,6 +104,8 @@ class OlamaService:
         ```
 
         Combine similar events where appropriate and focus on the most impactful developments across the period.
+        You should ONLY reply with the JSON object.
+
 
         Here are the daily summaries:
             {text_to_summarize}
