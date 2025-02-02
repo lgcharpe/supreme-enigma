@@ -176,8 +176,6 @@ class OlamaService:
     @staticmethod
     def generate_response_with_topic(text_to_summarize: str, language: str, topic: str) -> str:
         prompt: str = f"""
-        Here's the rewritten prompt:
-
         You are an expert parliamentary analyst. Given a transcription of parliamentary proceedings, create a focused analysis of {topic} in {language}. Extract and analyze all relevant information about this topic from the provided transcript. Format the response as JSON with these exact fields:
 
         ```json
