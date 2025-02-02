@@ -53,12 +53,14 @@ async def get_summary_by_date(
 ):
     language_name = get_language_name(lang)
     d_obj = DayBody(country=country, date=date, lang=language_name)
+    print(d_obj)
 
     season_ids, dates = APIService.get_ids_from_date(d_obj)
+    print(season_ids, dates)
     if not season_ids:
         return {"responses": [], "meta_summary": None}
 
-    response_object = APIService.get_responses_from_ids(season_ids, dates, d_obj.language_name)
+    response_object = APIService.get_responses_from_ids(season_ids, dates, d_obj.lang)
     return response_object
 
 

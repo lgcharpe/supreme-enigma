@@ -140,7 +140,7 @@ class XMLService:
                 # If date object is of instance DayBody, we want to extract the publication IDs for a specific date
                 # If date object is of instance RequestBody, we want to extract the publication IDs for a date range
                 if isinstance(date_object, DayBody):
-                    if date_object.date == pub_date:
+                    if date_object.date == str(pub_date):
                         pub_id = pub.get('id')
                         if pub_id:
                             publication_ids.append(pub_id)
