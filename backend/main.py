@@ -8,6 +8,17 @@ from services.cache_service import CacheService
 from services.olama_service import OlamaService
 import json
 from utils import get_language_name
+from datetime import datetime, timedelta
+
+
+def get_date_range():
+    to_date = datetime.now().date()
+    from_date = to_date - timedelta(weeks=2)
+
+    return {
+        "from_date": from_date.strftime("%Y-%m-%d"),
+        "to_date": to_date.strftime("%Y-%m-%d")
+    }
 
 app = FastAPI()
 logger = logging.getLogger(__name__)
@@ -21,6 +32,7 @@ async def get_summary_by_period(
     endDate: str = Path(...),
     lang: str = Query("nb", min_length=2, max_length=2)
 ):
+    print("HALLIO")
     d_object = PeriodBody(from_date=startDate, to_date=endDate)
     language_name = get_language_name(lang)
     # Check if the response is cached first
@@ -136,3 +148,16 @@ async def get_topics(
     # Implementation for the topics endpoint
     topics = APIService.get_topics()
     return topics
+
+@app.get("/summary/{country}/latest")
+async def get_latest_summary(
+    country: str = Path(..., min_length=2, max_length=2),
+    lang: str = Query("nb", min_length=2, max_length=2)
+):
+    date_range = get_date_range()
+    from_date = date_range["from_date"]
+    to_date = date_range["to_date"]
+    print(from_date, to_date)
+    # call the get summary by period method
+    result = await get_summary_by_period(country, from_date, to_date, lang)
+    return result
