@@ -32,7 +32,7 @@ PARAMETER repeat_last_n 64
 PARAMETER repeat_penalty 1.1
 
 # Context length and generation
-PARAMETER num_ctx 16384
+PARAMETER num_ctx 32768
 # Maximum number of tokens to predict when generating text. (Default: -1, infinite generation)
 PARAMETER num_predict -1
 
