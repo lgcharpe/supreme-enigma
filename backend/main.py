@@ -30,7 +30,7 @@ async def get_summary_by_period(
         if not season_ids:
             return {"responses": [], "meta_summary": None}
 
-        final_response = APIService.get_responses_from_ids(season_ids, dates)
+        final_response = APIService.get_responses_from_ids(season_ids, dates, language_name)
 
         try:
             raw_responses = [response["raw_response"] for response in final_response["responses"]]
