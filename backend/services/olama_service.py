@@ -176,7 +176,7 @@ class OlamaService:
     @staticmethod
     def generate_response_with_topic(text_to_summarize: str, language: str, topic: str) -> str:
         prompt: str = f"""
-        You are an expert parliamentary analyst. Given a transcription of parliamentary proceedings, create a focused analysis of {topic} in {language}. Extract and analyze all relevant information about this topic from the provided transcript. Format the response as JSON with these exact fields:
+        You are an expert parliamentary analyst. Given a transcription of parliamentary proceedings, create a focused analysis of {topic} (topic term in the same language as the transcript) in {language}. Do not talk about other topics. Extract and analyze all relevant information about this topic from the provided transcript. Format the response as JSON with these exact fields:
 
         ```json
         {{
@@ -202,7 +202,7 @@ class OlamaService:
         ```
 
         Focus on tracking this specific topic through the proceedings, highlighting key developments, decisions, and their implications for the public. Synthesize information to provide a clear picture of where this issue stands and where it's headed.
-        You should ONLY reply with the JSON object.
+        You should ONLY reply with the JSON object. If nothing is said about that topic, say so. Only focus on the specified topic: {topic}
 
         Here is the transcription:
             {text_to_summarize}

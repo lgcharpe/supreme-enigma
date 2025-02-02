@@ -51,7 +51,7 @@ async def get_summary_by_period(
 async def get_summary_by_date(
     country: str = Path(..., min_length=2, max_length=2),
     date: str = Path(...),
-    lang: str = Query("en", min_length=2, max_length=2)
+    lang: str = Query("nb", min_length=2, max_length=2)
 ):
     language_name = get_language_name(lang)
     d_obj = DayBody(country=country, date=date, lang=language_name)
@@ -70,16 +70,16 @@ async def get_summary_by_date_and_topic(
     country: str = Path(..., min_length=2, max_length=2),
     date: str = Path(...),
     topic: int = Path(...),
-    lang: str = Query("en", min_length=2, max_length=2)
+    lang: str = Query("nb", min_length=2, max_length=2)
 ):
     language_name = get_language_name(lang)
     d_obj = DayBody(country=country, date=date, lang=language_name)
     topics = APIService.get_topics()
     all_topics = XMLService.get_all_topic_names(topics)
     topic_name = all_topics.get(topic, None)
+    print(topic_name)
 
     season_ids, dates = APIService.get_ids_from_date(d_obj)
-    print(season_ids, dates)
     if not season_ids:
         return {"responses": [], "meta_summary": None}
 
@@ -92,7 +92,7 @@ async def get_summary_by_period_and_topic(
     startDate: str = Path(...),
     endDate: str = Path(...),
     topic: int = Path(...),
-    lang: str = Query("en", min_length=2, max_length=2)
+    lang: str = Query("nb", min_length=2, max_length=2)
 ):
 
     # Call the get topics method to get the topics and find the topic name from the topic id
@@ -131,7 +131,7 @@ async def get_summary_by_period_and_topic(
 @app.get("/topics/{country}")
 async def get_topics(
     country: str = Path(..., min_length=2, max_length=2),
-    lang: str = Query("en", min_length=2, max_length=2)
+    lang: str = Query("nb", min_length=2, max_length=2)
 ):
     # Implementation for the topics endpoint
     topics = APIService.get_topics()
