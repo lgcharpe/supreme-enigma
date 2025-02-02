@@ -88,12 +88,15 @@ class XMLService:
                 return None
 
     @staticmethod
-    def get_all_topic_names(topics: List[Topic]) -> List[str]:
+    def get_all_topic_names(topics: List[Topic]) -> dict:
         """Helper method to get a flat list of all topic names"""
-        result = []
+        result = {}
         for topic in topics:
-            result.append(topic['name'])
-            result.extend([sub['name'] for sub in topic['sub_topics']])
+            tid = topic['id']
+            result[int(tid)] = topic['name']
+            if len(topic["sub_topics"]) > 0:
+                for sub_topic in topic["sub_topics"]:
+                    result[int(sub_topic["id"])] = sub_topic["name"]
         return result
 
     @staticmethod
