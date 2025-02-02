@@ -62,6 +62,7 @@ GET topics/{country}
     "impact": "string"          // Why it matters
   }]
 }
+```
 
 ### Topic Summary Response
 
