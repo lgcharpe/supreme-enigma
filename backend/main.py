@@ -62,8 +62,11 @@ async def get_summary_by_date(
     return response_object
 
 
-@app.get("/topics")
-async def topics():
+@app.get("/topics/{country}")
+async def get_topics(
+    country: str = Path(..., min_length=2, max_length=2),
+    lang: str = Query("en", min_length=2, max_length=2)
+):
     # Implementation for the topics endpoint
     topics = APIService.get_topics()
     return topics
