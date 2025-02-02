@@ -6,4 +6,6 @@ class PeriodBody(BaseModel):
     to_date: date
 
 class DayBody(BaseModel):
-    date: date
+    country: str
+    date: str
+    lang: str

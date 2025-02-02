@@ -84,7 +84,7 @@ class APIService:
             return None
 
     @staticmethod
-    def get_responses_from_ids(season_ids: List, dates: List) -> dict:
+    def get_responses_from_ids(season_ids: List, dates: List, language: str) -> dict:
         final_response = {
             "responses": [],
         }
@@ -106,7 +106,7 @@ class APIService:
                 continue
 
             try:
-                summary = OlamaService.generate_response(publication).strip("```json").strip("```")
+                summary = OlamaService.generate_response(publication, language).strip("```json").strip("```")
                 try:
                     parsed_summary = json.loads(summary)
                 except json.JSONDecodeError:
