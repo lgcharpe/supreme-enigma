@@ -12,7 +12,7 @@ from services.olama_service import OlamaService
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-MAX_TOKEN_LIMIT = 15000
+MAX_TOKEN_LIMIT = 3000
 
 class APIService:
     @staticmethod
@@ -107,6 +107,50 @@ class APIService:
 
             try:
                 summary = OlamaService.generate_response(publication, language).strip("```json").strip("```")
+                try:
+                    parsed_summary = json.loads(summary)
+                except json.JSONDecodeError:
+                    logger.error(f"Error parsing JSON: {summary}")
+                    continue
+
+                response_object = {
+                    "response": parsed_summary,
+                    "raw_response": summary,
+                    "lengths": length,
+                    "ids": season_id,
+                    "dates": str(p_date)
+                }
+                final_response["responses"].append(response_object)
+                CacheService.cache_object(response_object)
+            except Exception as e:
+                logger.error(f"Error processing publication {season_id}: {str(e)}")
+                continue
+        return final_response
+
+    @staticmethod
+    def get_responses_from_ids_and_topic(season_ids: List, dates: List, language: str, topic: str) -> dict:
+        final_response = {
+            "responses": [],
+        }
+        for season_id, p_date in zip(season_ids, dates):
+            # Log the season ID and date
+            logger.info(f"Processing season ID {season_id} from date {p_date}")
+            cached_response = CacheService.read_from_cache(season_id)
+            if cached_response:
+                final_response["responses"].append(cached_response)
+                continue
+
+            # Get and process publication
+            publication = APIService.get_publication(season_id)
+            if not publication:
+                continue
+
+            length = len(publication.split())
+            if length > MAX_TOKEN_LIMIT:
+                continue
+
+            try:
+                summary = OlamaService.generate_response_with_topic(publication, language, topic).strip("```json").strip("```")
                 try:
                     parsed_summary = json.loads(summary)
                 except json.JSONDecodeError:

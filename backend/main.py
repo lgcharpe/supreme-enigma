@@ -55,7 +55,6 @@ async def get_summary_by_date(
 ):
     language_name = get_language_name(lang)
     d_obj = DayBody(country=country, date=date, lang=language_name)
-    print(d_obj)
 
     season_ids, dates = APIService.get_ids_from_date(d_obj)
     print(season_ids, dates)
@@ -63,6 +62,28 @@ async def get_summary_by_date(
         return {"responses": [], "meta_summary": None}
 
     response_object = APIService.get_responses_from_ids(season_ids, dates, d_obj.lang)
+    return response_object
+
+
+@app.get("/summary/{country}/date/{date}/{topic}")
+async def get_summary_by_date_and_topic(
+    country: str = Path(..., min_length=2, max_length=2),
+    date: str = Path(...),
+    topic: int = Path(...),
+    lang: str = Query("en", min_length=2, max_length=2)
+):
+    language_name = get_language_name(lang)
+    d_obj = DayBody(country=country, date=date, lang=language_name)
+    topics = APIService.get_topics()
+    all_topics = XMLService.get_all_topic_names(topics)
+    topic_name = all_topics.get(topic, None)
+
+    season_ids, dates = APIService.get_ids_from_date(d_obj)
+    print(season_ids, dates)
+    if not season_ids:
+        return {"responses": [], "meta_summary": None}
+
+    response_object = APIService.get_responses_from_ids_and_topic(season_ids, dates, d_obj.lang, topic_name)
     return response_object
 
 @app.get("/summary/{country}/period/{startDate}/{endDate}/{topic}")
